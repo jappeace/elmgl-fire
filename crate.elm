@@ -92,7 +92,15 @@ perspective angle =
 
 scene : Mat4 -> Texture -> List Entity
 scene camera texture =
-    [ WebGL.entity
+    [    WebGL.entity
+        crateVertex
+        crateFragment
+        crateMesh
+        { texture = texture
+        , perspective = (Mat4.translate (vec3 0 2 0) camera)
+        }
+    ,
+        WebGL.entity
         crateVertex
         crateFragment
         crateMesh
@@ -255,10 +263,9 @@ crateVertex =
         varying vec2 vcoord;
 
         void main () {
-          gl_Position = perspective * vec4(position, 1.0);
+          gl_Position = perspective * vec4(position, 1.0) ;
           vcoord = coord;
         }
-
     |]
 
 
