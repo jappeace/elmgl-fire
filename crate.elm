@@ -64,6 +64,8 @@ main =
 
 view : Model -> Html Msg
 view { texture, theta } =
+    Html.div [] [
+    Html.p [] [Html.text (toString theta)],
     WebGL.toHtmlWith
         [ WebGL.alpha True
         , WebGL.antialias
@@ -78,6 +80,7 @@ view { texture, theta } =
             |> Maybe.map (scene (perspective theta))
             |> Maybe.withDefault []
         )
+      ]
 
 
 perspective : Float -> Mat4
@@ -267,7 +270,6 @@ crateVertex =
           vcoord = coord;
         }
     |]
-
 
 crateFragment : Shader {} { u | texture : Texture } { vcoord : Vec2 }
 crateFragment =
