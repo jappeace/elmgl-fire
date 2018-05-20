@@ -99,7 +99,13 @@ init =
           color = vec4 (Vec3.getX rgb) (Vec3.getY rgb) (Vec3.getZ rgb) 0.8
         }
     ]}
-    , Task.attempt TextureLoaded (Texture.load "texture/gradient.png")
+    , Task.attempt TextureLoaded (Texture.loadWith { 
+        magnify = Texture.linear, 
+        minify = Texture.linear, 
+        horizontalWrap = Texture.repeat,
+        verticalWrap = Texture.repeat, 
+        flipY = True
+      } "texture/gradient.png")
     )
 
 main : Program Never Model Msg
