@@ -24,7 +24,7 @@ update action model =
         Animate dt ->
             let 
                 newModel = { model |
-                  --theta = model.theta + dt / 1000, -- always count
+                  theta = model.theta + dt / 1000, -- always count
                   entropy = Nothing -- don't re-use entropy
                 }
             in
@@ -48,7 +48,7 @@ logic fps model seed =
         parts = createParticles seed model.particleDiscrepancy
     in
       {model | 
-        particles = model.particles ++ (Tuple.second parts), 
+        particles = (Tuple.second parts) ++ model.particles, 
         particleDiscrepancy = Tuple.first parts + (toFloat opts.fireEmitRate) * fps
       }
 
@@ -81,7 +81,7 @@ createParticles seed discrepancy = if discrepancy <= 0 then (discrepancy, []) el
       result = createParticle seed
       other = createParticles (Tuple.second result) (discrepancy - 1)
     in
-      (Tuple.first other, Tuple.second other ++ [Tuple.first result])
+      (Tuple.first other, Tuple.first result :: Tuple.second other)
 
 init : ( Model, Cmd Msg )
 init =
