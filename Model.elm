@@ -7,11 +7,12 @@ import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import WebGL.Texture as Texture exposing (Error, Texture)
 import Time exposing (Time)
+import Random
 
 type Msg
     = TextureLoaded (Result Error Texture)
     | Animate Time
-
+    | Entropy Int
 
 type alias Particle = {
     size : Float,
@@ -19,6 +20,15 @@ type alias Particle = {
     position: Vec2,
     color: Vec4 
 }
+
+type alias Model =
+    { texture : Maybe Texture
+    , theta : Float
+    , options : Options
+    , particles : List Particle
+    , entropy: Maybe Random.Seed
+    , particleDiscrepancy: Float
+    }
 
 type alias Options = {
     fireEmitPositionSpread: Vec2,
@@ -41,9 +51,9 @@ type alias Options = {
 opts : Options
 opts = {
     fireEmitPositionSpread = vec2 100 20,
-    fireEmitRate = 1600,
+    fireEmitRate = 10,
     fireSize = 40.0,
-    fireSizeVarience = 1.0,
+    fireSizeVarience = 10.0, -- variation up and down from firesize in px
     fireEmitVarience = 100.0,
     fireSpeed = 200,
     fireDeathSpeed = 0.003,
@@ -56,10 +66,3 @@ opts = {
     width = 400,
     height = 400
   }
-
-type alias Model =
-    { texture : Maybe Texture
-    , theta : Float
-    , options : Options
-    , particles : List Particle
-    }
