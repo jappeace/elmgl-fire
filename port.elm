@@ -234,12 +234,11 @@ fragmentShader =
       void main() {
         vec4 texColor = texture2D(texture, v_texture_coord.xy * vec2(1,-1));
 
-        float alpha = texColor.a * v_color.a;
         vec4 finalColor;
-        finalColor.r = texColor.r * v_color.r * alpha;
-        finalColor.g = texColor.g * v_color.g * alpha;
-        finalColor.b = texColor.b * v_color.b * alpha;
-        finalColor.a = alpha;
+        finalColor.r = texColor.r * v_color.r;
+        finalColor.g = texColor.g * v_color.g;
+        finalColor.b = texColor.b * v_color.b;
+        finalColor.a = texColor.a * v_color.a;
 
         gl_FragColor = finalColor;
       }
