@@ -1,4 +1,7 @@
 module Port exposing (..)
+{-
+A port of https://github.com/ethanhjennings/webgl-fire-particles
+-}
 
 import AnimationFrame
 import Html exposing (Html)
@@ -10,10 +13,10 @@ import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import Task
 import Time exposing (Time)
 import WebGL exposing (Mesh, Shader, Entity)
-import WebGL.Settings.Blend as Blend
-import WebGL.Settings.DepthTest as DepthTest
-import WebGL.Settings.StencilTest as StencilTest
 import WebGL.Texture as Texture exposing (Error, Texture)
+import WebGL.Settings.Blend as Blend
+import WebGL.Settings
+import Hue
 
 type alias Particle = {
     size : Float,
@@ -35,7 +38,9 @@ type alias Options = {
     fireTextureHueVariance: Float,
     fireTextureColorize: Bool,
     wind: Bool,
-    omnidirectionalWind: Bool
+    omnidirectionalWind: Bool,
+    width: Int,
+    height: Int
 }
 
 opts : Options
@@ -43,7 +48,7 @@ opts = {
     fireEmitPositionSpread = vec2 100 20,
     fireEmitRate = 1600,
     fireSize = 40.0,
-    fireSizeVarience = 100.0,
+    fireSizeVarience = 1.0,
     fireEmitVarience = 100.0,
     fireSpeed = 200,
     fireDeathSpeed = 0.003,
@@ -52,7 +57,9 @@ opts = {
     fireTextureHueVariance = 15.0,
     fireTextureColorize = True,
     wind = True,
-    omnidirectionalWind = False
+    omnidirectionalWind = False,
+    width = 400,
+    height = 400
   }
 
 type alias Model =
@@ -81,15 +88,18 @@ logic fps model = model -- TODO port logic
 
 init : ( Model, Cmd Msg )
 init =
+    let 
+        rgb = vec3 (Hue.convertHue opts.fireTextureHue) 1.0 1.0 |> Hue.hsvTorgb
+    in
     ( { texture = Nothing, theta = 0, options = opts, particles = [
         {
-          size = 50.0,
+          size = opts.fireSize,
           velocity = vec2 10.0 10.0,
-          position = vec2 20.0 20.0,
-          color = vec4 1.0 1.0 1.0 1.0
+          position = vec2 200.0 20.0,
+          color = vec4 (Vec3.getX rgb) (Vec3.getY rgb) (Vec3.getZ rgb) 0.8
         }
     ]}
-    , Task.attempt TextureLoaded (Texture.load "texture/flame.png")
+    , Task.attempt TextureLoaded (Texture.load "texture/gradient.png")
     )
 
 main : Program Never Model Msg
@@ -106,13 +116,11 @@ view { texture, theta, particles } =
     Html.div [] [
     Html.p [] [Html.text (toString theta)],
     WebGL.toHtmlWith
-        [ WebGL.alpha True
-        , WebGL.antialias
-        , WebGL.depth 1
-        , WebGL.stencil 0
+        [ 
+          WebGL.clearColor 0.0 0.0 0.0 1.0
         ]
-        [ width 400
-        , height 400
+        [ width opts.width
+        , height opts.height
         , style [ ( "display", "block" ) ]
         ]
         (texture
@@ -120,12 +128,16 @@ view { texture, theta, particles } =
             |> Maybe.withDefault []
         )
       ]
+
 scene : List Particle -> Texture -> List Entity
 scene particles texture = 
   let 
-    partfunc arg = WebGL.entity vertexShader fragmentShader arg { 
+    partfunc arg = WebGL.entityWith [  
+      Blend.add Blend.srcAlpha Blend.one
+    ] vertexShader fragmentShader arg { 
+
       texture=texture,
-      resolution=vec2 200 500
+      resolution=vec2 (toFloat opts.width) (toFloat opts.height)
     }
   in
     List.map (partfunc << particleMesh) particles
@@ -220,14 +232,14 @@ fragmentShader =
       varying highp vec2 v_texture_coord;
 
       void main() {
-        vec2 uv = gl_FragCoord.xy/vec2(800,600); 
-        vec4 texColor = texture2D(texture,v_texture_coord.xy);
+        vec4 texColor = texture2D(texture, v_texture_coord.xy * vec2(1,-1));
 
+        float alpha = texColor.a * v_color.a;
         vec4 finalColor;
-        finalColor.r = texColor.r*v_color.r;
-        finalColor.g = texColor.g*v_color.g;
-        finalColor.b = texColor.b*v_color.b;
-        finalColor.a = texColor.a*v_color.a;
+        finalColor.r = texColor.r * v_color.r * alpha;
+        finalColor.g = texColor.g * v_color.g * alpha;
+        finalColor.b = texColor.b * v_color.b * alpha;
+        finalColor.a = alpha;
 
         gl_FragColor = finalColor;
       }
