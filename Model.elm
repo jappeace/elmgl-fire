@@ -31,7 +31,8 @@ type alias Model =
     }
 
 type alias Options = {
-    fireEmitPositionSpread: Vec2,
+    fireEmitPosition: Vec2,
+    fireEmitSpread: Float,
     fireEmitRate: Int,
     fireSize: Float,
     fireSizeVarience: Float,
@@ -49,8 +50,13 @@ type alias Options = {
 }
 
 opts : Options
-opts = {
-    fireEmitPositionSpread = vec2 100 20,
+opts = let 
+    width = 400
+    height = width
+  in
+  {
+    fireEmitPosition = vec2 (width/2) (height/2+200),
+    fireEmitSpread = 100,
     fireEmitRate = 10,
     fireSize = 40.0,
     fireSizeVarience = 10.0, -- variation up and down from firesize in px
@@ -63,6 +69,6 @@ opts = {
     fireTextureColorize = True,
     wind = True,
     omnidirectionalWind = False,
-    width = 400,
-    height = 400
+    width = width,
+    height = height
   }

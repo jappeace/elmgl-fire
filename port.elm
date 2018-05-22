@@ -57,10 +57,10 @@ spread seed center variance = let
     in
       (((Tuple.first rngFloat) - 0.5) * variance + center, Tuple.second rngFloat)
 
-random2DVec : Seed -> Float -> Float -> (Vec2, Seed)
-random2DVec seed center variance = let
-      x = spread seed opts.fireSize opts.fireSizeVarience
-      y = spread (Tuple.second x) opts.fireSize opts.fireSizeVarience
+random2DVec : Seed -> Vec2 -> Float -> (Vec2, Seed)
+random2DVec seed origin spreadAmount = let
+      x = spread seed (Vec2.getX origin) spreadAmount 
+      y = spread (Tuple.second x) (Vec2.getY origin) spreadAmount
     in
         (vec2 (Tuple.first x) (Tuple.first y), Tuple.second y)
      
@@ -70,16 +70,15 @@ createParticle seed = let
       velx = randomFloat  <| Tuple.second size
       vely = randomFloat  <| Tuple.second velx 
       hue = spread (Tuple.second vely) opts.fireTextureHue opts.fireTextureHueVariance
-      posx = randomFloat  <| Tuple.second hue
-      posy = randomFloat  <| Tuple.second posx
+      position = random2DVec (Tuple.second hue) opts.fireEmitPosition opts.fireEmitSpread
       rgb = vec3 (Hue.convertHue <| Tuple.first hue) 1.0 1.0 |> Hue.hsvTorgb
     in
     ({
         size = Tuple.first size,
         velocity = (vec2 (Tuple.first velx) (Tuple.first vely)), -- TODO do this properly with angles
-        position = vec2 ((Tuple.first posx)*(toFloat opts.height)) ((Tuple.first posy)*(toFloat opts.width)),
+        position = Tuple.first position,
         color = vec4 (Vec3.getX rgb) (Vec3.getY rgb) (Vec3.getZ rgb) 0.5
-      }, Tuple.second posy)
+      }, Tuple.second position)
 
 createParticles : Random.Seed -> Float -> (Float, List Particle)
 createParticles seed discrepancy = if discrepancy <= 0 then (discrepancy, []) else 
