@@ -5,7 +5,6 @@ A port of https://github.com/ethanhjennings/webgl-fire-particles
 
 import AnimationFrame
 import Html exposing (Html)
-import Html.Attributes exposing (width, height, style)
 import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import Math.Vector3 as Vec3 exposing (Vec3, vec3)
 import Math.Vector4 as Vec4 exposing (Vec4, vec4)
@@ -57,6 +56,13 @@ spread seed center variance = let
       rngFloat = randomFloat seed
     in
       (((Tuple.first rngFloat) - 0.5) * variance + center, Tuple.second rngFloat)
+
+random2DVec : Seed -> Float -> Float -> (Vec2, Seed)
+random2DVec seed center variance = let
+      x = spread seed opts.fireSize opts.fireSizeVarience
+      y = spread (Tuple.second x) opts.fireSize opts.fireSizeVarience
+    in
+        (vec2 (Tuple.first x) (Tuple.first y), Tuple.second y)
      
 createParticle : Seed -> (Particle, Seed)
 createParticle seed = let
