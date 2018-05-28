@@ -64,18 +64,24 @@ random2DVec seed origin spreadAmount = let
     in
         (vec2 (Tuple.first x) (Tuple.first y), Tuple.second y)
      
+toUnit : Vec2 -> Vec2
+toUnit vec = let
+      normal = Vec2.normalize vec
+    in
+     vec2 ((cos (Vec2.getX normal))*0.2) (-(sin (Vec2.getY normal)))
+
 createParticle : Seed -> (Particle, Seed)
 createParticle seed = let
       size = spread seed opts.fireSize opts.fireSizeVarience
-      velx = randomFloat  <| Tuple.second size
-      vely = randomFloat  <| Tuple.second velx 
-      hue = spread (Tuple.second vely) opts.fireTextureHue opts.fireTextureHueVariance
+      speed = spread (Tuple.second size) opts.fireSpeed opts.fireSpeedVariance
+      velocityrng = random2DVec (Tuple.second speed) (vec2 (pi/2) (pi/2)) opts.fireEmitVarience
+      hue = spread (Tuple.second velocityrng) opts.fireTextureHue opts.fireTextureHueVariance
       position = random2DVec (Tuple.second hue) opts.fireEmitPosition opts.fireEmitSpread
       rgb = vec3 (Hue.convertHue <| Tuple.first hue) 1.0 1.0 |> Hue.hsvTorgb
     in
     ({
         size = Tuple.first size,
-        velocity = (vec2 (Tuple.first velx) (Tuple.first vely)), -- TODO do this properly with angles
+        velocity = (Vec2.scale (Tuple.first speed) (toUnit (Tuple.first velocityrng))),
         position = Tuple.first position,
         color = vec4 (Vec3.getX rgb) (Vec3.getY rgb) (Vec3.getZ rgb) 0.5
       }, Tuple.second position)
