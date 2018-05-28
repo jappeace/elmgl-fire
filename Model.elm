@@ -8,6 +8,7 @@ import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import WebGL.Texture as Texture exposing (Error, Texture)
 import Time exposing (Time)
 import Random
+import Noise exposing (PermutationTable)
 
 type Msg
     = TextureLoaded (Result Error Texture)
@@ -28,6 +29,7 @@ type alias Model =
     , particles : List Particle
     , entropy: Maybe Random.Seed
     , particleDiscrepancy: Float
+    , permutTable: PermutationTable --
     }
 
 type alias Options = {
@@ -38,6 +40,7 @@ type alias Options = {
     fireSizeVarience: Float,
     fireEmitVarience: Float,
     fireSpeed: Float,
+    fireSpeedVariance: Float,
     fireDeathSpeed: Float,
     fireTriangleness: Float,
     fireTextureHue: Float,
@@ -57,10 +60,10 @@ opts = let
   {
     fireEmitPosition = vec2 (width/2) (height/2+200),
     fireEmitSpread = 100,
-    fireEmitRate = 10,
+    fireEmitRate = 30,
     fireSize = 40.0,
     fireSizeVarience = 10.0, -- variation up and down from firesize in px
-    fireEmitVarience = 100.0,
+    fireEmitVarience = 1.0,
     fireSpeed = 200,
     fireDeathSpeed = 0.003,
     fireTriangleness =  0.00015,
@@ -70,5 +73,6 @@ opts = let
     wind = True,
     omnidirectionalWind = False,
     width = width,
-    height = height
+    height = height,
+    fireSpeedVariance = 4.0
   }

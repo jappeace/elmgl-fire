@@ -13,7 +13,9 @@ import WebGL.Texture as Texture exposing (Error, Texture)
 import Hue
 import Model exposing (..)
 import View exposing (view)
-import Random exposing (Seed)
+import Random exposing (Seed, initialSeed)
+import Noise exposing (noise3d, permutationTable )
+import Particle exposing (logic)
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
@@ -38,62 +40,6 @@ update action model =
 getEntropy : Cmd Msg
 getEntropy = Random.generate Entropy <| Random.int Random.minInt Random.maxInt
 
-randomFloat : Seed -> (Float, Seed)
-randomFloat = Random.step (Random.float 0 1)
-
-logic : Float -> Model -> Random.Seed -> Model
-logic fps model seed = 
-    let 
-        parts = createParticles seed model.particleDiscrepancy
-    in
-      {model | 
-        particles = (Tuple.second parts) ++ model.particles, 
-        particleDiscrepancy = Tuple.first parts + (toFloat opts.fireEmitRate) * fps
-      }
-
-spread : Seed -> Float -> Float -> (Float, Seed)
-spread seed center variance = let
-      rngFloat = randomFloat seed
-    in
-      (((Tuple.first rngFloat) - 0.5) * variance + center, Tuple.second rngFloat)
-
-random2DVec : Seed -> Vec2 -> Float -> (Vec2, Seed)
-random2DVec seed origin spreadAmount = let
-      x = spread seed (Vec2.getX origin) spreadAmount 
-      y = spread (Tuple.second x) (Vec2.getY origin) spreadAmount
-    in
-        (vec2 (Tuple.first x) (Tuple.first y), Tuple.second y)
-     
-toUnit : Vec2 -> Vec2
-toUnit vec = let
-      normal = Vec2.normalize vec
-    in
-     vec2 ((cos (Vec2.getX normal))*0.2) (-(sin (Vec2.getY normal)))
-
-createParticle : Seed -> (Particle, Seed)
-createParticle seed = let
-      size = spread seed opts.fireSize opts.fireSizeVarience
-      speed = spread (Tuple.second size) opts.fireSpeed opts.fireSpeedVariance
-      velocityrng = random2DVec (Tuple.second speed) (vec2 (pi/2) (pi/2)) opts.fireEmitVarience
-      hue = spread (Tuple.second velocityrng) opts.fireTextureHue opts.fireTextureHueVariance
-      position = random2DVec (Tuple.second hue) opts.fireEmitPosition opts.fireEmitSpread
-      rgb = vec3 (Hue.convertHue <| Tuple.first hue) 1.0 1.0 |> Hue.hsvTorgb
-    in
-    ({
-        size = Tuple.first size,
-        velocity = (Vec2.scale (Tuple.first speed) (toUnit (Tuple.first velocityrng))),
-        position = Tuple.first position,
-        color = vec4 (Vec3.getX rgb) (Vec3.getY rgb) (Vec3.getZ rgb) 0.5
-      }, Tuple.second position)
-
-createParticles : Random.Seed -> Float -> (Float, List Particle)
-createParticles seed discrepancy = if discrepancy <= 0 then (discrepancy, []) else 
-    let
-      result = createParticle seed
-      other = createParticles (Tuple.second result) (discrepancy - 1)
-    in
-      (Tuple.first other, Tuple.first result :: Tuple.second other)
-
 init : ( Model, Cmd Msg )
 init =
     ( {
@@ -102,7 +48,8 @@ init =
         options = opts,
         particles = [],
         entropy = Nothing,
-        particleDiscrepancy = 0.0
+        particleDiscrepancy = 0.0,
+        permutTable = Tuple.first (permutationTable (initialSeed 42))
     }
     , Task.attempt TextureLoaded (Texture.loadWith { 
         magnify = Texture.linear, 
