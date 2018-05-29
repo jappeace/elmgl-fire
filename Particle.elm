@@ -12,8 +12,9 @@ import Random exposing (Seed, initialSeed)
 import VectorMath exposing (spread, random2DVec, toUnit)
 
 move : Float -> Particle -> Particle
-move float particle = {particle | 
-    position = Vec2.add (Vec2.scale float particle.velocity) particle.position
+move fps particle = {particle | 
+    position = Vec2.add (Vec2.scale fps particle.velocity) particle.position,
+    color = Vec4.add particle.color (vec4 0.0 0.0 0.0 -(opts.fireDeathSpeed*fps))
   }
 
 logic : Float -> Model -> Random.Seed -> Model
