@@ -5,12 +5,8 @@ A port of https://github.com/ethanhjennings/webgl-fire-particles
 
 import AnimationFrame
 import Html exposing (Html)
-import Math.Vector2 as Vec2 exposing (Vec2, vec2)
-import Math.Vector3 as Vec3 exposing (Vec3, vec3)
-import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import Task
 import WebGL.Texture as Texture exposing (Error, Texture)
-import Hue
 import Model exposing (..)
 import View exposing (view)
 import Random exposing (Seed, initialSeed)
