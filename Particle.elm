@@ -9,12 +9,18 @@ import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import Hue
 import Model exposing (..)
 import Random exposing (Seed, initialSeed)
-import VectorMath exposing (spread, random2DVec, toUnit)
+import VectorMath exposing (spread, random2DVec, toUnit, both)
+import Noise exposing (PermutationTable, noise3d)
 
-move : Float -> Particle -> Particle
-move fps particle = {particle | 
+move : Float -> PermutationTable -> Float -> Particle -> Particle
+move time table fps particle = let
+    wind = Vec2.scale opts.windStrength <| toUnit <| both <| noise3d table ((Vec2.getX particle.position) / (toFloat opts.width)) ((Vec2.getY particle.position) / (toFloat opts.height)) time
+  in
+  {particle | 
     position = Vec2.add (Vec2.scale fps particle.velocity) particle.position,
-    color = Vec4.add particle.color (vec4 0.0 0.0 0.0 -(opts.fireDeathSpeed*fps))
+    velocity = Vec2.add particle.velocity wind,
+    color = Vec4.add particle.color (vec4 0.0 0.0 0.0 -(opts.fireDeathSpeed*fps)),
+    size = particle.size - opts.fireShrinkFactor*fps
   }
 
 logic : Float -> Model -> Random.Seed -> Model
@@ -23,7 +29,7 @@ logic fps model seed =
         parts = createParticles seed model.particleDiscrepancy
     in
       {model | 
-        particles = List.take 50 (List.map (move fps) ((Tuple.second parts) ++ model.particles)), 
+        particles = List.take 50 (List.map (move model.time model.permutTable fps) ((Tuple.second parts) ++ model.particles)), 
         particleDiscrepancy = Tuple.first parts + (toFloat opts.fireEmitRate) * fps
       }
 

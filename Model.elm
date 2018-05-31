@@ -24,7 +24,7 @@ type alias Particle = {
 
 type alias Model =
     { texture : Maybe Texture
-    , theta : Float
+    , time : Float
     , options : Options
     , particles : List Particle
     , entropy: Maybe Random.Seed
@@ -42,9 +42,12 @@ type alias Options = {
     fireSpeed: Float,
     fireSpeedVariance: Float,
     fireDeathSpeed: Float,
+    fireShrinkFactor: Float,
     fireTriangleness: Float,
     fireTextureHue: Float,
     fireTextureHueVariance: Float,
+    windStrength: Float,
+    windTurbulance : Float,
     fireTextureColorize: Bool,
     wind: Bool,
     omnidirectionalWind: Bool,
@@ -66,6 +69,7 @@ opts = let
     fireEmitVarience = 1.0,
     fireSpeed = 200,
     fireDeathSpeed = 0.25,
+    fireShrinkFactor = 10.0,
     fireTriangleness =  0.00015,
     fireTextureHue =  25.0,
     fireTextureHueVariance = 15.0,
@@ -74,5 +78,7 @@ opts = let
     omnidirectionalWind = False,
     width = width,
     height = height,
-    fireSpeedVariance = 4.0
+    fireSpeedVariance = 4.0,
+    windStrength = 20.0,
+    windTurbulance  = 0.0003
   }

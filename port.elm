@@ -21,7 +21,7 @@ update action model =
         Animate dt ->
             let 
                 newModel = { model |
-                  theta = model.theta + dt / 1000, -- always count
+                  time = model.time+ dt / 1000, -- always count
                   entropy = Nothing -- don't re-use entropy
                 }
             in
@@ -40,7 +40,7 @@ init : ( Model, Cmd Msg )
 init =
     ( {
         texture = Nothing,
-        theta = 0,
+        time = 0,
         options = opts,
         particles = [],
         entropy = Nothing,

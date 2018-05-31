@@ -13,9 +13,9 @@ import WebGL.Settings.Blend as Blend
 import Model exposing (Model, opts, Msg, Particle)
 
 view : Model -> Html Msg
-view { texture, theta, particles } =
+view { texture, time, particles } =
     Html.div [] [
-    Html.p [] [Html.text (toString theta)],
+    Html.p [] [Html.text (toString time)],
     WebGL.toHtmlWith
         [ 
           WebGL.clearColor 0.0 0.0 0.0 1.0

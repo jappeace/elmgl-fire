@@ -22,6 +22,11 @@ random2DVec seed origin spreadAmount = let
     in
         (vec2 (Tuple.first x) (Tuple.first y), Tuple.second y)
      
+one = vec2 1.0 1.0
+
+both : Float -> Vec2
+both sd = Vec2.scale sd one
+
 toUnit : Vec2 -> Vec2
 toUnit vec = let
       normal = Vec2.normalize vec
