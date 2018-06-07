@@ -22,13 +22,17 @@ random2DVec seed origin spreadAmount = let
     in
         (vec2 (Tuple.first x) (Tuple.first y), Tuple.second y)
      
+randomUnitVec : Seed -> Float -> Float -> (Vec2, Seed)
+randomUnitVec seed origin spreadAmount = let
+    angle = spread seed origin spreadAmount 
+      in 
+    (angleVec (Tuple.first angle), Tuple.second angle)
+
 one = vec2 1.0 1.0
 
 both : Float -> Vec2
 both sd = Vec2.scale sd one
 
-toUnit : Vec2 -> Vec2
-toUnit vec = let
-      normal = Vec2.normalize vec
-    in
-     vec2 ((cos (Vec2.getX normal))*0.2) (-(sin (Vec2.getY normal)))
+angleVec : Float -> Vec2
+angleVec angle = 
+     vec2 (cos angle) (-(sin angle))

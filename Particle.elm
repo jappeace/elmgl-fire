@@ -9,12 +9,15 @@ import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import Hue
 import Model exposing (..)
 import Random exposing (Seed, initialSeed)
-import VectorMath exposing (spread, random2DVec, toUnit, both)
+import VectorMath exposing (spread, random2DVec, angleVec, both, randomUnitVec)
 import Noise exposing (PermutationTable, noise3d)
 
 move : Float -> PermutationTable -> Float -> Particle -> Particle
 move time table fps particle = let
-    wind = Vec2.scale opts.windStrength <| toUnit <| both <| noise3d table ((Vec2.getX particle.position) / (toFloat opts.width)) ((Vec2.getY particle.position) / (toFloat opts.height)) time
+    wind = Vec2.scale opts.windStrength <| angleVec <| (((noise3d table 
+      ((Vec2.getX particle.position) / (toFloat opts.width)) 
+      ((Vec2.getY particle.position) / (toFloat opts.height)) 
+      time * opts.windTurbulance ) + 1.0) * pi * 0.5 )
   in
   {particle | 
     position = Vec2.add (Vec2.scale fps particle.velocity) particle.position,
@@ -29,7 +32,7 @@ logic fps model seed =
         parts = createParticles seed model.particleDiscrepancy
     in
       {model | 
-        particles = List.take 50 (List.map (move model.time model.permutTable fps) ((Tuple.second parts) ++ model.particles)), 
+        particles = List.take opts.particleCount ((Tuple.second parts) ++ (List.map (move model.time model.permutTable fps) model.particles)), 
         particleDiscrepancy = Tuple.first parts + (toFloat opts.fireEmitRate) * fps
       }
 
@@ -37,14 +40,14 @@ createParticle : Seed -> (Particle, Seed)
 createParticle seed = let
       size = spread seed opts.fireSize opts.fireSizeVarience
       speed = spread (Tuple.second size) opts.fireSpeed opts.fireSpeedVariance
-      velocityrng = random2DVec (Tuple.second speed) (vec2 (pi/2) (pi/2)) opts.fireEmitVarience
+      velocityrng = randomUnitVec (Tuple.second speed) (pi/2) opts.fireAngleVarience
       hue = spread (Tuple.second velocityrng) opts.fireTextureHue opts.fireTextureHueVariance
       position = random2DVec (Tuple.second hue) opts.fireEmitPosition opts.fireEmitSpread
       rgb = vec3 (Hue.convertHue <| Tuple.first hue) 1.0 1.0 |> Hue.hsvTorgb
     in
     ({
         size = Tuple.first size,
-        velocity = (Vec2.scale (Tuple.first speed) (toUnit (Tuple.first velocityrng))),
+        velocity = (Vec2.scale (Tuple.first speed) (Tuple.first velocityrng)),
         position = Tuple.first position,
         color = vec4 (Vec3.getX rgb) (Vec3.getY rgb) (Vec3.getZ rgb) 0.5
       }, Tuple.second position)

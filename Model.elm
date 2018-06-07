@@ -36,6 +36,7 @@ type alias Options = {
     fireEmitPosition: Vec2,
     fireEmitSpread: Float,
     fireEmitRate: Int,
+    particleCount: Int,
     fireSize: Float,
     fireSizeVarience: Float,
     fireEmitVarience: Float,
@@ -46,6 +47,7 @@ type alias Options = {
     fireTriangleness: Float,
     fireTextureHue: Float,
     fireTextureHueVariance: Float,
+    fireAngleVarience: Float,
     windStrength: Float,
     windTurbulance : Float,
     fireTextureColorize: Bool,
@@ -63,11 +65,13 @@ opts = let
   {
     fireEmitPosition = vec2 (width/2) (height/2+200),
     fireEmitSpread = 100,
-    fireEmitRate = 30,
+    fireEmitRate = 100,
     fireSize = 40.0,
     fireSizeVarience = 10.0, -- variation up and down from firesize in px
     fireEmitVarience = 1.0,
-    fireSpeed = 200,
+    fireAngleVarience = 1.0,
+    fireSpeed = 100,
+    particleCount = 200,
     fireDeathSpeed = 0.25,
     fireShrinkFactor = 10.0,
     fireTriangleness =  0.00015,
@@ -78,7 +82,7 @@ opts = let
     omnidirectionalWind = False,
     width = width,
     height = height,
-    fireSpeedVariance = 4.0,
-    windStrength = 20.0,
+    fireSpeedVariance = 40.0,
+    windStrength = 5.0,
     windTurbulance  = 0.0003
   }
