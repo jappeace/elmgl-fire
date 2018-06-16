@@ -19,6 +19,7 @@ update action model =
         TextureLoaded textureResult ->
             ( { model | texture = Result.toMaybe textureResult }, Cmd.none )
         Animate dt ->
+            if dt > 50 then (model, Cmd.none) else
             let 
                 newModel = { model |
                   time = model.time+ dt / 1000, -- always count
