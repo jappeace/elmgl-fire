@@ -16,6 +16,7 @@ type Msg
     | Animate Time
     | Entropy Int
 
+type alias MonoidalMesh = List (Vertex, Vertex, Vertex)
 type alias Particle = {
     size : Float,
     velocity: Vec2,
@@ -27,7 +28,7 @@ type alias Model =
     {
     time : Float
     , options : Options
-    , particles : List Particle
+    , particles : MonoidalMesh
     , entropy: Maybe Random.Seed
     , particleDiscrepancy: Float
     , permutTable: PermutationTable --

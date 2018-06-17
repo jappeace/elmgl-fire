@@ -11,6 +11,7 @@ import Model exposing (..)
 import Random exposing (Seed, initialSeed)
 import VectorMath exposing (spread, random2DVec, angleVec, both, randomUnitVec)
 import Noise exposing (PermutationTable, noise3d)
+import View exposing (particleMesh)
 
 move : Float -> PermutationTable -> Float -> Particle -> Particle
 move time table fps particle = let
@@ -32,7 +33,7 @@ logic fps model seed =
         parts = createParticles seed model.particleDiscrepancy
     in
       {model | 
-        particles = List.take opts.particleCount ((Tuple.second parts) ++ model.particles), 
+        particles = List.take opts.particleCount ((particleMesh model.time (Tuple.second parts)) ++ model.particles), 
         particleDiscrepancy = Tuple.first parts + (toFloat opts.fireEmitRate) * fps
       }
 

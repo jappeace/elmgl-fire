@@ -25,18 +25,15 @@ view {uniforms, time, particles } =
         , style [ ( "display", "block" ) ]
         ]
         (uniforms
-            |> Maybe.map (scene time particles)
+            |> Maybe.map (\x -> [scene time particles x])
             |> Maybe.withDefault [])
       ]
 
-scene : Float -> List Particle -> Uniforms -> List Entity
+scene : Float -> Model.MonoidalMesh -> Uniforms -> Entity
 scene time particles uni = 
-  let 
-    partfunc arg = WebGL.entityWith [  
+    WebGL.entityWith [  
       Blend.add Blend.srcAlpha Blend.one
-    ] vertexShader fragmentShader arg uni
-  in
-    List.map (partfunc << particleMesh time) particles
+    ] vertexShader fragmentShader (particles |> WebGL.triangles) uni
 
 triangle : Float -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec4 -> (Vertex, Vertex, Vertex)
 triangle creationTime velocity a b c d e f col = (
@@ -63,8 +60,8 @@ triangle creationTime velocity a b c d e f col = (
     }
   )
 
-particleMesh : Float -> Particle -> Mesh Vertex
-particleMesh creationTime particle =
+toShape : Float -> Particle -> Model.MonoidalMesh
+toShape creationTime particle = 
     let 
       size = particle.size/2
       left   = (Vec2.getX particle.position) - size
@@ -91,7 +88,9 @@ particleMesh creationTime particle =
         (vec2 1.0 0.0)
         (vec2 1.0 1.0)
         particle.color
-    ] |> WebGL.triangles
+    ]
+particleMesh : Float -> List Particle -> Model.MonoidalMesh
+particleMesh creationTime particles = List.concatMap (toShape creationTime) particles
 
 vertexShader : Shader Vertex Uniforms { v_color : Vec4, v_texture_coord : Vec2 }
 vertexShader =
@@ -109,7 +108,7 @@ vertexShader =
 
       void main() {
         float passed = time_now - creation_time;
-        vec2 position = start_position + velocity * passed * 100.0;
+        vec2 position = start_position + velocity * passed;
         vec2 clipSpace = (position/resolution)*2.0-1.0;
         gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
         v_color = color_attribute;
