@@ -13,7 +13,7 @@ import WebGL.Settings.Blend as Blend
 import Model exposing (Model, opts, Msg, Particle, Vertex, Uniforms)
 
 view : Model -> Html Msg
-view { time, particles } =
+view {uniforms, time, particles } =
     Html.div [] [
     Html.p [] [Html.text (toString time)],
     WebGL.toHtmlWith
@@ -24,7 +24,9 @@ view { time, particles } =
         , height opts.height
         , style [ ( "display", "block" ) ]
         ]
-        (particles)
+        (uniforms
+            |> Maybe.map (scene time particles)
+            |> Maybe.withDefault [])
       ]
 
 scene : Float -> List Particle -> Uniforms -> List Entity
@@ -106,7 +108,9 @@ vertexShader =
       varying vec2 v_texture_coord;
 
       void main() {
-        vec2 clipSpace = (start_position/resolution)*2.0-1.0;
+        float passed = time_now - creation_time;
+        vec2 position = start_position + velocity * passed * 100.0;
+        vec2 clipSpace = (position/resolution)*2.0-1.0;
         gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
         v_color = color_attribute;
         v_texture_coord = texture_coord;

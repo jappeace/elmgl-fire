@@ -11,7 +11,6 @@ import Model exposing (..)
 import Random exposing (Seed, initialSeed)
 import VectorMath exposing (spread, random2DVec, angleVec, both, randomUnitVec)
 import Noise exposing (PermutationTable, noise3d)
-import View exposing (scene)
 
 move : Float -> PermutationTable -> Float -> Particle -> Particle
 move time table fps particle = let
@@ -31,12 +30,9 @@ logic : Float -> Model -> Random.Seed -> Model
 logic fps model seed = 
     let 
         parts = createParticles seed model.particleDiscrepancy
-        entities = model.uniforms
-            |> Maybe.map (scene model.time (Tuple.second parts))
-            |> Maybe.withDefault []
     in
       {model | 
-        particles = List.take opts.particleCount (entities ++ model.particles), 
+        particles = List.take opts.particleCount ((Tuple.second parts) ++ model.particles), 
         particleDiscrepancy = Tuple.first parts + (toFloat opts.fireEmitRate) * fps
       }
 

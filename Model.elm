@@ -27,7 +27,7 @@ type alias Model =
     {
     time : Float
     , options : Options
-    , particles : List Entity
+    , particles : List Particle
     , entropy: Maybe Random.Seed
     , particleDiscrepancy: Float
     , permutTable: PermutationTable --
