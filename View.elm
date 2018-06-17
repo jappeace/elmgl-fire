@@ -10,10 +10,10 @@ import Math.Vector4 as Vec4 exposing (Vec4, vec4)
 import WebGL exposing (Mesh, Shader, Entity)
 import WebGL.Texture as Texture exposing (Error, Texture)
 import WebGL.Settings.Blend as Blend
-import Model exposing (Model, opts, Msg, Particle)
+import Model exposing (Model, opts, Msg, Particle, Vertex, Uniforms)
 
 view : Model -> Html Msg
-view { texture, time, particles } =
+view { time, particles } =
     Html.div [] [
     Html.p [] [Html.text (toString time)],
     WebGL.toHtmlWith
@@ -24,22 +24,15 @@ view { texture, time, particles } =
         , height opts.height
         , style [ ( "display", "block" ) ]
         ]
-        (texture
-            |> Maybe.map (scene particles)
-            |> Maybe.withDefault []
-        )
+        (particles)
       ]
 
-scene : List Particle -> Texture -> List Entity
-scene particles texture = 
+scene : List Particle -> Uniforms -> List Entity
+scene particles uni = 
   let 
     partfunc arg = WebGL.entityWith [  
       Blend.add Blend.srcAlpha Blend.one
-    ] vertexShader fragmentShader arg { 
-
-      texture=texture,
-      resolution=vec2 (toFloat opts.width) (toFloat opts.height)
-    }
+    ] vertexShader fragmentShader arg uni
   in
     List.map (partfunc << particleMesh) particles
 
@@ -110,18 +103,6 @@ vertexShader =
       }
 
     |]
-
-type alias Vertex =
-    { position : Vec2
-    , texture_coord : Vec2
-    , color_attribute : Vec4
-    }
-
-type alias Uniforms =
-    { 
-    resolution : Vec2,
-    texture : Texture
-    }
 
 fragmentShader : Shader {} { u | texture : Texture } { v_color : Vec4, v_texture_coord : Vec2 }
 fragmentShader =

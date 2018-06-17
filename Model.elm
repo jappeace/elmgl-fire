@@ -9,6 +9,7 @@ import WebGL.Texture as Texture exposing (Error, Texture)
 import Time exposing (Time)
 import Random
 import Noise exposing (PermutationTable)
+import WebGL exposing (Entity)
 
 type Msg
     = TextureLoaded (Result Error Texture)
@@ -23,13 +24,14 @@ type alias Particle = {
 }
 
 type alias Model =
-    { texture : Maybe Texture
-    , time : Float
+    {
+    time : Float
     , options : Options
-    , particles : List Particle
+    , particles : List Entity
     , entropy: Maybe Random.Seed
     , particleDiscrepancy: Float
     , permutTable: PermutationTable --
+    , uniforms : Maybe Uniforms
     }
 
 type alias Options = {
@@ -54,7 +56,8 @@ type alias Options = {
     wind: Bool,
     omnidirectionalWind: Bool,
     width: Int,
-    height: Int
+    height: Int,
+    maxFrameInterval: Float
 }
 
 opts : Options
@@ -71,7 +74,7 @@ opts = let
     fireEmitVarience = 1.0,
     fireAngleVarience = 1.0,
     fireSpeed = 100,
-    particleCount = 200,
+    particleCount = 500,
     fireDeathSpeed = 0.25,
     fireShrinkFactor = 10.0,
     fireTriangleness =  0.00015,
@@ -84,5 +87,18 @@ opts = let
     height = height,
     fireSpeedVariance = 40.0,
     windStrength = 5.0,
-    windTurbulance  = 0.0003
+    windTurbulance  = 0.0003,
+    maxFrameInterval = 100.0 -- in ms
   }
+
+type alias Vertex =
+    { position : Vec2
+    , texture_coord : Vec2
+    , color_attribute : Vec4
+    }
+
+type alias Uniforms =
+    { 
+    resolution : Vec2,
+    texture : Texture
+    }

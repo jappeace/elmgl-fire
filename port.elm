@@ -3,6 +3,7 @@ module Port exposing (..)
 A port of https://github.com/ethanhjennings/webgl-fire-particles
 -}
 
+import Math.Vector2 as Vec2 exposing (Vec2, vec2)
 import AnimationFrame
 import Html exposing (Html)
 import Task
@@ -17,9 +18,15 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update action model =
     case action of
         TextureLoaded textureResult ->
-            ( { model | texture = Result.toMaybe textureResult }, Cmd.none )
+            let 
+                uniforms = Maybe.map (\text -> {
+                    texture=text, 
+                    resolution=vec2 (toFloat opts.width) (toFloat opts.height)
+                  } ) <| Result.toMaybe textureResult 
+            in
+            ({ model | uniforms = uniforms} , Cmd.none )
         Animate dt ->
-            if dt > 50 then (model, Cmd.none) else
+            if dt > opts.maxFrameInterval then (model, Cmd.none) else
             let 
                 newModel = { model |
                   time = model.time+ dt / 1000, -- always count
@@ -40,7 +47,7 @@ getEntropy = Random.generate Entropy <| Random.int Random.minInt Random.maxInt
 init : ( Model, Cmd Msg )
 init =
     ( {
-        texture = Nothing,
+        uniforms = Nothing,
         time = 0,
         options = opts,
         particles = [],
