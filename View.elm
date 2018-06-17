@@ -27,45 +27,52 @@ view { time, particles } =
         (particles)
       ]
 
-scene : List Particle -> Uniforms -> List Entity
-scene particles uni = 
+scene : Float -> List Particle -> Uniforms -> List Entity
+scene time particles uni = 
   let 
     partfunc arg = WebGL.entityWith [  
       Blend.add Blend.srcAlpha Blend.one
     ] vertexShader fragmentShader arg uni
   in
-    List.map (partfunc << particleMesh) particles
+    List.map (partfunc << particleMesh time) particles
 
-triangle : Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec4 -> (Vertex, Vertex, Vertex)
-triangle a b c d e f col = (
+triangle : Float -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec2 -> Vec4 -> (Vertex, Vertex, Vertex)
+triangle creationTime velocity a b c d e f col = (
     {
-      position = a, 
+      start_position = a, 
       texture_coord = d,
-      color_attribute = col
+      color_attribute = col,
+      creation_time = creationTime,
+      velocity = velocity
     }, 
     {
-      position = b, 
+      start_position = b, 
       texture_coord = e,
-      color_attribute = col
+      color_attribute = col,
+      creation_time = creationTime,
+      velocity = velocity
     }, 
     {
-      position = c, 
+      start_position = c, 
       texture_coord = f,
-      color_attribute = col
+      color_attribute = col,
+      creation_time = creationTime,
+      velocity = velocity
     }
   )
 
-particleMesh : Particle -> Mesh Vertex
-particleMesh particle =
+particleMesh : Float -> Particle -> Mesh Vertex
+particleMesh creationTime particle =
     let 
       size = particle.size/2
       left   = (Vec2.getX particle.position) - size
       right  = (Vec2.getX particle.position) + size
       bottom = (Vec2.getY particle.position) - size
       top    = (Vec2.getY particle.position) + size
+      partTriang = triangle creationTime particle.velocity
     in
     [ 
-      triangle
+      partTriang 
         (vec2 left bottom)
         (vec2 right bottom)
         (vec2 left top)
@@ -74,7 +81,7 @@ particleMesh particle =
         (vec2 0.0 1.0)
         particle.color
       ,
-      triangle 
+      partTriang 
         (vec2 left top)
         (vec2 right bottom)
         (vec2 right top)
@@ -87,16 +94,19 @@ particleMesh particle =
 vertexShader : Shader Vertex Uniforms { v_color : Vec4, v_texture_coord : Vec2 }
 vertexShader =
     [glsl|
-      attribute vec2 position;
+      attribute vec2 start_position;
+      attribute vec2 velocity;
+      attribute float creation_time;
       attribute vec2 texture_coord;
       attribute vec4 color_attribute;
 
       uniform vec2 resolution;
+      uniform float time_now;
       varying vec4 v_color;
       varying vec2 v_texture_coord;
 
       void main() {
-        vec2 clipSpace = (position/resolution)*2.0-1.0;
+        vec2 clipSpace = (start_position/resolution)*2.0-1.0;
         gl_Position = vec4(clipSpace * vec2(1, -1), 0, 1);
         v_color = color_attribute;
         v_texture_coord = texture_coord;

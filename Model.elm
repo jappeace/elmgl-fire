@@ -74,7 +74,7 @@ opts = let
     fireEmitVarience = 1.0,
     fireAngleVarience = 1.0,
     fireSpeed = 100,
-    particleCount = 500,
+    particleCount = 200,
     fireDeathSpeed = 0.25,
     fireShrinkFactor = 10.0,
     fireTriangleness =  0.00015,
@@ -92,13 +92,16 @@ opts = let
   }
 
 type alias Vertex =
-    { position : Vec2
+    { start_position : Vec2
     , texture_coord : Vec2
     , color_attribute : Vec4
+    , creation_time: Float
+    , velocity : Vec2
     }
 
 type alias Uniforms =
     { 
     resolution : Vec2,
+    time_now: Float,
     texture : Texture
     }

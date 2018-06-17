@@ -21,15 +21,18 @@ update action model =
             let 
                 uniforms = Maybe.map (\text -> {
                     texture=text, 
-                    resolution=vec2 (toFloat opts.width) (toFloat opts.height)
+                    time_now = 0.0,
+                    resolution= vec2 (toFloat opts.width) (toFloat opts.height)
                   } ) <| Result.toMaybe textureResult 
             in
             ({ model | uniforms = uniforms} , Cmd.none )
         Animate dt ->
             if dt > opts.maxFrameInterval then (model, Cmd.none) else
             let 
+                newTime = model.time+ dt / 1000 -- always count
                 newModel = { model |
-                  time = model.time+ dt / 1000, -- always count
+                  time = newTime, 
+                  uniforms = Maybe.map (\x -> {x| time_now=newTime}) model.uniforms,
                   entropy = Nothing -- don't re-use entropy
                 }
             in

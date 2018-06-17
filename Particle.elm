@@ -32,7 +32,7 @@ logic fps model seed =
     let 
         parts = createParticles seed model.particleDiscrepancy
         entities = model.uniforms
-            |> Maybe.map (scene (Tuple.second parts))
+            |> Maybe.map (scene model.time (Tuple.second parts))
             |> Maybe.withDefault []
     in
       {model | 
